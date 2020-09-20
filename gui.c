@@ -19,6 +19,8 @@
 #include "common.h"
 #include "font.h"
 
+extern u32 BootBIOS;
+
 #ifndef _WIN32_WCE
 
 #include <sys/stat.h>
@@ -986,6 +988,8 @@ s32 load_config_file()
         gamepad_config_map[PLAT_MENU_BUTTON] = BUTTON_ID_MENU;
       }*/
 #endif
+		BootBIOS = file_options[FILE_OPTION_COUNT-1];
+
 		file_close(config_file);
     }
 
@@ -1059,6 +1063,8 @@ s32 save_config_file()
       file_options[fo_main_option_count + i] = gamepad_config_map[i];
     }
 #endif
+
+	file_options[FILE_OPTION_COUNT-1] = BootBIOS;
 
     file_write_array(config_file, file_options);
 
@@ -1258,6 +1264,12 @@ u32 menu(u16 *original_screen)
        reg[CHANGED_PC_STATUS] = 1;
        menu_update_clock();
     }
+  }
+  
+  void menu_bios()
+  {
+    if (BootBIOS == 1) BootBIOS = 0;
+    else BootBIOS = 1;
   }
 
   void menu_restart()
@@ -1682,8 +1694,13 @@ u32 menu(u16 *original_screen)
      "loaded.", 9),
     action_option(menu_exit, NULL, "Return to game",
      "Select to exit this menu and resume gameplay.", 10),
+     
+    numeric_selection_action_option(menu_bios, NULL,
+     "Boot to BIOS : ", &BootBIOS, 2,
+     "0 for no, 1 for YES", 11),
+     
     action_option(menu_quit, NULL, "Exit gpSP",
-     "Select to exit gpSP and return to the menu.", 12)
+     "Select to exit gpSP and return to the menu.", 13)
   };
 
   make_menu(main, submenu_main, NULL);

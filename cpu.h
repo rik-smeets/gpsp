@@ -208,7 +208,7 @@ extern u32 memory_writes_u8;
 extern u32 memory_writes_u16;
 extern u32 memory_writes_u32;
 
-void init_cpu();
+void init_cpu(uint32_t BootFromBIOS);
 void move_reg();
 
 #endif

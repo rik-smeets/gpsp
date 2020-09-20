@@ -4429,7 +4429,7 @@ void execute_arm(u32 cycles)
   }
 }
 
-void init_cpu()
+void init_cpu(uint32_t BootFromBIOS)
 {
   u32 i;
 
@@ -4439,7 +4439,9 @@ void init_cpu()
   }
 
   reg[REG_SP] = 0x03007F00;
-  reg[REG_PC] = 0x08000000;
+  reg[REG_PC] = BootFromBIOS
+    ? 0x00000000
+    : 0x08000000;
   reg[REG_CPSR] = 0x0000001F;
   reg[CPU_HALT_STATE] = CPU_ACTIVE;
   reg[CPU_MODE] = MODE_USER;

@@ -19,6 +19,8 @@
 
 #include "common.h"
 
+u32 BootBIOS = 0;
+
 #ifdef PSP_BUILD
 
 //PSP_MODULE_INFO("gpSP", 0x1000, 0, 6);
@@ -328,7 +330,7 @@ int main(int argc, char *argv[])
     set_gba_resolution(screen_scale);
     video_resolution_small();
 
-    init_cpu();
+    init_cpu(BootBIOS);
     init_memory();
   }
   else
@@ -353,7 +355,7 @@ int main(int argc, char *argv[])
       set_gba_resolution(screen_scale);
       video_resolution_small();
 
-      init_cpu();
+      init_cpu(BootBIOS);
       init_memory();
     }
   }
@@ -908,7 +910,7 @@ void reset_gba()
 {
   init_main();
   init_memory();
-  init_cpu();
+  init_cpu(BootBIOS);
   reset_sound();
 }
 

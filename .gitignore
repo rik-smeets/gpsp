@@ -2,8 +2,15 @@
 *.u
 *.z
 *.gcda
+*.gba
+*.bin
 gpsp.gpe
 tags
 cscope.out
 pandora/linux
 bittboy/gpsp
+x86/*.txt
+bittboy/*.txt
+x86/*.cfg
+x86/gpsp
+bittboy/*.cfg
