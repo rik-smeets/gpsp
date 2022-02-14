@@ -18,6 +18,7 @@ VPATH      += .. ../arm
 CFLAGS     += -DARM_ARCH -DPC_BUILD -DBITTBOY -Wall
 CFLAGS     += -Ofast -fdata-sections -ffunction-sections -fsingle-precision-constant -fno-PIC -flto -march=armv5te -mtune=arm926ej-s -fprofile-generate=./profile
 CFLAGS     += `/opt/bittboy-toolchain/arm-buildroot-linux-musleabi/sysroot/usr/bin/sdl-config --cflags`
+LDFLAGS    =-lgcov
 
 # expecting to have PATH set up to get correct sdl-config first
 
@@ -34,7 +35,7 @@ all: $(BIN)
 cpu.o cpu_threaded.o: CFLAGS += -Wno-unused-variable -Wno-unused-label
 
 $(BIN): $(OBJS)
-	$(CC) $(OBJS) $(LIBS) -o $(BIN)
+	$(CC) $(OBJS) $(LIBS) -o $(BIN) $(LDFLAGS)
 
 clean:
 	rm -f *.o $(BIN)
