@@ -20,7 +20,6 @@
 #include "common.h"
 #define WANT_FONT_BITS
 #include "font.h"
-#include "imageio.h"
 
 #ifdef PSP_BUILD
 
@@ -1015,7 +1014,7 @@ static void render_scanline_conditional_bitmap(u32 start, u32 end, u16 *scanline
 
 
 
-static const u16 map_widths[] = { 256, 512, 256, 512 };
+static const u32 map_widths[] = { 256, 512, 256, 512 };
 
 // Build text scanline rendering functions.
 
@@ -1026,7 +1025,7 @@ static void render_scanline_text_##combine_op##_##alpha_op(u32 layer,         \
   render_scanline_extra_variables_##combine_op##_##alpha_op(text);            \
   u32 bg_control = io_registers[REG_BG0CNT + layer];                          \
   u32 map_size = (bg_control >> 14) & 0x03;                                   \
-  u16 map_width = map_widths[map_size];                                       \
+  u32 map_width = map_widths[map_size];                                       \
   u32 horizontal_offset =                                                     \
    (io_registers[REG_BG0HOFS + (layer * 2)] + start) % 512;                   \
   u32 vertical_offset = (io_registers[REG_VCOUNT] +                           \
@@ -1905,14 +1904,14 @@ static const bitmap_layer_render_struct bitmap_mode_renderers[3] =
   }                                                                           \
 }                                                                             \
 
-static const u8 obj_width_table[] =
+static const u32 obj_width_table[] =
   { 8, 16, 32, 64, 16, 32, 32, 64, 8, 8, 16, 32 };
-static const u8 obj_height_table[] =
+static const u32 obj_height_table[] =
   { 8, 16, 32, 64, 8, 8, 16, 32, 16, 32, 32, 64 };
 
 static FULLY_UNINITIALIZED(u8 obj_priority_list[5][160][128]);
-static u8 obj_priority_count[5][160];
-static u8 obj_alpha_count[160];
+static u32 obj_priority_count[5][160];
+static u32 obj_alpha_count[160];
 
 
 // Build obj rendering functions
@@ -2136,8 +2135,18 @@ static void order_obj(u32 video_mode)
   u32 current_count;
   u16 *oam_ptr = oam_ram + 508;
 
-  memset(obj_priority_count, 0, 5 * 160);
-  memset(obj_alpha_count, 0, 160);
+  for(priority = 0; priority < 5; priority++)
+  {
+    for(row = 0; row < 160; row++)
+    {
+      obj_priority_count[priority][row] = 0;
+    }
+  }
+
+  for(row = 0; row < 160; row++)
+  {
+    obj_alpha_count[row] = 0;
+  }
 
   for(obj_num = 127; obj_num >= 0; obj_num--, oam_ptr -= 4)
   {
@@ -2182,40 +2191,43 @@ static void order_obj(u32 video_mode)
           {
             obj_height = 160 - obj_y;
           }
-          
-          
-			switch (obj_mode)
-			{
-				case 1:
-					for(row = obj_y; row < obj_y + obj_height; row++)
-					{
-						obj_alpha_count[row]++;
-					}
-				break;
-				case 2:
-					obj_priority = 4;
-				break;
-			}
-		  
-			for(row = obj_y; row < obj_y + obj_height; row++)
-			{
-				current_count = obj_priority_count[obj_priority][row];
-				obj_priority_list[obj_priority][row][current_count] = obj_num;
-				obj_priority_count[obj_priority][row] = current_count + 1;
-			}
 
-		}
+          if(obj_mode == 1)
+          {
+            for(row = obj_y; row < obj_y + obj_height; row++)
+            {
+              current_count = obj_priority_count[obj_priority][row];
+              obj_priority_list[obj_priority][row][current_count] = obj_num;
+              obj_priority_count[obj_priority][row] = current_count + 1;
+              obj_alpha_count[row]++;
+            }
+          }
+          else
+          {
+            if(obj_mode == 2)
+            {
+              obj_priority = 4;
+            }
+
+            for(row = obj_y; row < obj_y + obj_height; row++)
+            {
+              current_count = obj_priority_count[obj_priority][row];
+              obj_priority_list[obj_priority][row][current_count] = obj_num;
+              obj_priority_count[obj_priority][row] = current_count + 1;
+            }
+          }
+        }
       }
     }
   }
 }
 
-u8 layer_order[16];
-u8 layer_count;
+u32 layer_order[16];
+u32 layer_count;
 
-static void order_layers(u8 layer_flags)
+static void order_layers(u32 layer_flags)
 {
-  s8 priority, layer_number;
+  s32 priority, layer_number;
   layer_count = 0;
 
   for(priority = 3; priority >= 0; priority--)
@@ -2286,15 +2298,15 @@ fill_line_builder(color32);
   pixel_bottom = palette_ram_converted[(pixel_pair >> 16) & 0x1FF];           \
   pixel_bottom = (pixel_bottom | (pixel_bottom << 16)) & 0x07E0F81F;          \
   pixel_top = ((pixel_top * blend_a) + (pixel_bottom * blend_b)) >> 4;        \
-  if(pixel_top & 0x08010020 != 0)                                             \
+  if(pixel_top & 0x08010020)                                                  \
   {                                                                           \
-    if(pixel_top & 0x08000000 != 0)                                           \
+    if(pixel_top & 0x08000000)                                                \
       pixel_top |= 0x07E00000;                                                \
                                                                               \
-    if(pixel_top & 0x00010000 != 0)                                           \
+    if(pixel_top & 0x00010000)                                                \
       pixel_top |= 0x0000F800;                                                \
                                                                               \
-    if(pixel_top & 0x00000020 != 0)                                           \
+    if(pixel_top & 0x00000020)                                                \
       pixel_top |= 0x0000001F;                                                \
   }                                                                           \
 
@@ -2757,8 +2769,8 @@ static void expand_brighten_partial_alpha(u32 *screen_src_ptr, u16 *screen_dest_
 
 static void render_scanline_tile(u16 *scanline, u32 dispcnt)
 {
-  u8 current_layer;
-  u8 layer_order_pos;
+  u32 current_layer;
+  u32 layer_order_pos;
   u32 bldcnt = io_registers[REG_BLDCNT];
   render_scanline_layer_functions_tile();
 
@@ -2769,8 +2781,8 @@ static void render_scanline_tile(u16 *scanline, u32 dispcnt)
 static void render_scanline_bitmap(u16 *scanline, u32 dispcnt)
 {
   render_scanline_layer_functions_bitmap();
-  u8 current_layer;
-  u8 layer_order_pos;
+  u32 current_layer;
+  u32 layer_order_pos;
 
   fill_line_bg(normal, scanline, 0, 240);
 
@@ -2890,8 +2902,8 @@ static void render_scanline_conditional_tile(u32 start, u32 end, u16 *scanline,
  u32 enable_flags, u32 dispcnt, u32 bldcnt, const tile_layer_render_struct
  *layer_renderers)
 {
-  u8 current_layer;
-  u8 layer_order_pos = 0;
+  u32 current_layer;
+  u32 layer_order_pos = 0;
 
   render_layers_color_effect(render_layers_conditional,
    (layer_count && (enable_flags & 0x1F)),
@@ -2907,8 +2919,8 @@ static void render_scanline_conditional_bitmap(u32 start, u32 end, u16 *scanline
  u32 enable_flags, u32 dispcnt, u32 bldcnt, const bitmap_layer_render_struct
  *layer_renderers)
 {
-  u8 current_layer;
-  u8 layer_order_pos;
+  u32 current_layer;
+  u32 layer_order_pos;
 
   fill_line_bg(normal, scanline, start, end);
 
@@ -3234,7 +3246,7 @@ static void render_scanline_window_##type(u16 *scanline, u32 dispcnt)         \
 render_scanline_window_builder(tile);
 render_scanline_window_builder(bitmap);
 
-static const u8 active_layers[6] = { 0x1F, 0x17, 0x1C, 0x14, 0x14, 0x14 };
+static const u32 active_layers[6] = { 0x1F, 0x17, 0x1C, 0x14, 0x14, 0x14 };
 
 u32 small_resolution_width = 240;
 u32 small_resolution_height = 160;
@@ -3568,6 +3580,53 @@ static inline void gba_upscale(uint16_t *to, uint16_t *from,
 	}
 }
 
+#define AVERAGE16(c1, c2) (((c1) + (c2) + (((c1) ^ (c2)) & 0x0821))>>1)  //More accurate
+static inline void gba_nofilter_upscale(uint16_t *dst, uint16_t *src, int h)
+{
+    int Eh = 0;
+    int dh = 0;
+    int width = 320;
+    int vf = 0;
+    
+    dst += ((240-h)/2) * 320;  // blank upper border. h=240(full) or h=214(aspect)
+
+    int x, y;
+    for (y = 0; y < 240; y++)
+    {
+        int source = dh * width;
+        for (x = 0; x < 320/4; x++)
+        {
+            register uint16_t a, b, c;
+
+            a = src[source];
+            b = src[source+1];
+            c = src[source+2];
+
+            if(vf == 1){
+                a = AVERAGE16(a, src[source+width]);
+                b = AVERAGE16(b, src[source+width+1]);
+                c = AVERAGE16(c, src[source+width+2]);
+            }
+            
+            *dst++ = a;
+            *dst++ = (AVERAGE16(a,b) & 0b0000000000011111) | (b & 0b1111111111100000);
+            *dst++ = (b & 0b0000011111111111) | (AVERAGE16(b,c) & 0b1111100000000000);
+            *dst++ = c;
+            source+=3;
+
+        }
+        Eh += 160;
+        if(Eh >= h) {
+            Eh -= h;
+            dh++;
+            vf = 0;
+        }
+        else
+            vf = 1;
+    }
+}
+
+
 static inline void gba_upscale_aspect(uint16_t *to, uint16_t *from,
 	  uint32_t src_x, uint32_t src_y, uint32_t src_pitch, uint32_t dst_pitch)
 {
@@ -3804,14 +3863,19 @@ void flip_screen()
 				SDL_BlitSurface(screen, &srect, rl_screen, &drect);
 			break;
 			case 1:
-			
+                if (screen_filter)
 					gba_upscale_aspect((uint16_t*) ((uint8_t*)
 					rl_screen->pixels +
 					(((GCW0_SCREEN_HEIGHT - (GBA_SCREEN_HEIGHT) * 4 / 3) / 2) * rl_screen->pitch)) /* center vertically */,
 					screen->pixels, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, screen->pitch, rl_screen->pitch);
+                else
+					gba_nofilter_upscale(rl_screen->pixels,screen->pixels, 214);
 			break;
 			default:
-				gba_upscale(rl_screen->pixels, screen->pixels, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, screen->pitch, rl_screen->pitch);
+                if(screen_filter)
+                    gba_upscale(rl_screen->pixels, screen->pixels, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, screen->pitch, rl_screen->pitch);
+                else
+					gba_nofilter_upscale(rl_screen->pixels,screen->pixels, 240);                    
 			break;
 		}
 	}
@@ -3929,7 +3993,8 @@ void init_video()
 
 void init_video()
 {
-  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_NOPARACHUTE);
+  SDL_Init(SDL_INIT_VIDEO);
+  // SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_NOPARACHUTE);
 
 #ifdef GP2X_BUILD
   SDL_GP2X_AllowGfxMemory(NULL, 0);
@@ -3947,6 +4012,10 @@ void init_video()
   //screen = SDL_SetVideoMode(240 * video_scale, 160 * video_scale, 16, 0);
 #endif
   SDL_ShowCursor(0);
+}
+
+SDL_Surface* get_screen() {
+	return rl_screen;
 }
 
 #endif
@@ -4220,24 +4289,8 @@ void video_resolution_small()
 #endif
   resolution_width = small_resolution_width;
   resolution_height = small_resolution_height;
-
-  switch(current_scale){
-  case unscaled:
-    {
-      char name[128]={0};
-      SDL_Surface *loadPNG(const char* Path, uint32_t MaxWidth, uint32_t MaxHeight);
-      sprintf(name, "%s/border.png", main_path);
-      SDL_Surface* png = loadPNG(name, GCW0_SCREEN_WIDTH, GCW0_SCREEN_HEIGHT);
-      if(png == NULL){
-        printf("failed to load border png\n");
-      }
-      SDL_BlitSurface(png, NULL, rl_screen, NULL);
-      SDL_FreeSurface(png);
-    }
-    break;
-  default:
-    break;
-  }
+  
+  SDL_FillRect(rl_screen, NULL, 0);
 }
 
 void set_gba_resolution(video_scale_type scale)
