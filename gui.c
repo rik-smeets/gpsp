@@ -19,7 +19,10 @@
 #include "common.h"
 #include "font.h"
 
-extern u32 BootBIOS;
+extern u32 boot_to_BIOS;
+extern u32 auto_load_save_state;
+extern u32 auto_save_state;
+extern u32 auto_save_state_slot;
 
 #ifndef _WIN32_WCE
 
@@ -890,6 +893,10 @@ enum file_options {
   fo_global_enable_analog,
   fo_analog_sensitivity_level,
   fo_screen_filter2,
+  fo_auto_load_state,
+  fo_auto_save_state,
+  fo_auto_save_state_slot,
+  fo_boot_bios,
   fo_main_option_count,
 };
 
@@ -951,6 +958,9 @@ s32 load_config_file()
       screen_scale = file_options[fo_screen_scale] %
         (sizeof(scale_options) / sizeof(scale_options[0]));
       screen_filter = file_options[fo_screen_filter] % 2;
+      auto_load_save_state = file_options[fo_auto_load_state] % 2;
+      auto_save_state = file_options[fo_auto_save_state] % 2;
+      auto_save_state_slot = file_options[fo_auto_save_state_slot];
       global_enable_audio = file_options[fo_global_enable_audio] % 2;
       screen_filter2 = file_options[fo_screen_filter2] %
         (sizeof(filter2_options) / sizeof(filter2_options[0]));
@@ -988,7 +998,7 @@ s32 load_config_file()
         gamepad_config_map[PLAT_MENU_BUTTON] = BUTTON_ID_MENU;
       }*/
 #endif
-		BootBIOS = file_options[FILE_OPTION_COUNT-1];
+		boot_to_BIOS = file_options[fo_boot_bios];
 
 		file_close(config_file);
     }
@@ -1064,7 +1074,10 @@ s32 save_config_file()
     }
 #endif
 
-	file_options[FILE_OPTION_COUNT-1] = BootBIOS;
+	file_options[fo_boot_bios] = boot_to_BIOS;
+  file_options[fo_auto_load_state] = auto_load_save_state;
+  file_options[fo_auto_save_state] = auto_save_state;
+  file_options[fo_auto_save_state_slot] = auto_save_state_slot;
 
     file_write_array(config_file, file_options);
 
@@ -1268,12 +1281,6 @@ u32 menu(u16 *original_screen)
     }
   }
   
-  void menu_bios()
-  {
-    if (BootBIOS == 1) BootBIOS = 0;
-    else BootBIOS = 1;
-  }
-
   void menu_restart()
   {
     if(!first_load)
@@ -1359,7 +1366,6 @@ u32 menu(u16 *original_screen)
 
   void submenu_savestate()
   {
-		print_string("Savestate options:", COLOR_ACTIVE_ITEM, COLOR_BG, 10, 70);
 		menu_change_state();
   }
 
@@ -1517,21 +1523,30 @@ u32 menu(u16 *original_screen)
      "Load savestate from current slot", &savestate_slot, 10,
      "Select to load the game state from the current slot\n"
      "for this game.\n"
-     "Press left + right to change the current slot.", 6),
+     "Press left + right to change the current slot.", 3),
     numeric_selection_action_hide_option(menu_save_state, menu_change_state,
      "Save savestate to current slot", &savestate_slot, 10,
      "Select to save the game state to the current slot\n"
      "for this game.\n"
-     "Press left + right to change the current slot.", 7),
+     "Press left + right to change the current slot.", 4),
+    numeric_selection_option(menu_change_state,
+     "Current savestate slot", &savestate_slot, 10,
+     "Change the current savestate slot.\n", 5),
     numeric_selection_action_hide_option(menu_load_state_file,
       menu_change_state,
      "Load savestate from file", &savestate_slot, 10,
      "Restore gameplay from a savestate file.\n"
      "Note: The same file used to save the state must be\n"
-     "present.\n", 9),
-    numeric_selection_option(menu_change_state,
-     "Current savestate slot", &savestate_slot, 10,
-     "Change the current savestate slot.\n", 11),
+     "present.\n", 7),
+    string_selection_option(NULL, "Auto load state", yes_no_options,
+     (u32 *)(&auto_load_save_state), 2,
+     "Load state on game launch.\n", 9),
+     string_selection_option(NULL, "Auto save state", yes_no_options,
+     (u32 *)(&auto_save_state), 2,
+     "Save state on exiting gpSP.\n", 10),
+    numeric_selection_option(menu_change_state, "Auto save state slot",
+     (u32 *)(&auto_save_state_slot), 10,
+     "Savestate slot for auto save state.\n", 11),
     submenu_option(NULL, "Back", "Return to the main menu.", 13)
   };
 
@@ -1675,9 +1690,8 @@ u32 menu(u16 *original_screen)
      "for this game. See the extended menu for more info.\n"
      "Press left + right to change the current slot.", 3),
     submenu_option(&savestate_menu, "Savestate options",
-     "Select to enter a menu for loading, saving, and\n"
-     "viewing the currently active savestate for this game\n"
-     "(or to load a savestate file from another game)", 4),
+     "Configure auto save states and everything else\n"
+     "regarding save states here.", 4),
     submenu_option(&gamepad_config_menu, "Configure gamepad input",
      "Select to change the in-game behavior of buttons\n"
      "and d-pad.", 6),
@@ -1696,10 +1710,9 @@ u32 menu(u16 *original_screen)
      "loaded.", 9),
     action_option(menu_exit, NULL, "Return to game",
      "Select to exit this menu and resume gameplay.", 10),
-     
-    numeric_selection_action_option(menu_bios, NULL,
-     "Boot to BIOS : ", &BootBIOS, 2,
-     "0 for no, 1 for YES", 11),
+     string_selection_option(NULL, "Boot to BIOS", yes_no_options,
+     (u32*)(&boot_to_BIOS), 2, 
+     "", 11),
      
     action_option(menu_quit, NULL, "Exit gpSP",
      "Select to exit gpSP and return to the menu.", 13)

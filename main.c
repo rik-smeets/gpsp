@@ -19,7 +19,10 @@
 
 #include "common.h"
 
-u32 BootBIOS = 0;
+u32 boot_to_BIOS = 0;
+u32 auto_load_save_state = 0;
+u32 auto_save_state = 0;
+u32 auto_save_state_slot = 0;
 
 #ifdef PSP_BUILD
 
@@ -330,7 +333,7 @@ int main(int argc, char *argv[])
     set_gba_resolution(screen_scale);
     video_resolution_small();
 
-    init_cpu(BootBIOS);
+    init_cpu(boot_to_BIOS);
     init_memory();
   }
   else
@@ -355,7 +358,7 @@ int main(int argc, char *argv[])
       set_gba_resolution(screen_scale);
       video_resolution_small();
 
-      init_cpu(BootBIOS);
+      init_cpu(boot_to_BIOS);
       init_memory();
     }
   }
@@ -368,12 +371,13 @@ int main(int argc, char *argv[])
   execute_arm_translate(execute_cycles);
 #else
 
-/*  u8 current_savestate_filename[512];
-  get_savestate_filename_noshot(savestate_slot,
-   current_savestate_filename);
-  load_state(current_savestate_filename); */
-
-//  debug_on();
+  if (auto_load_save_state) 
+  {
+    char current_savestate_filename[512];
+    get_savestate_filename_noshot(auto_save_state_slot,
+    current_savestate_filename);
+    load_state(current_savestate_filename);
+  }
 
   if(argc > 2)
   {
@@ -882,6 +886,15 @@ void synchronize()
 
 void quit()
 {
+  if (auto_save_state) 
+  {
+    char current_savestate_filename[512];
+    u16 *current_screen = copy_screen();
+    get_savestate_filename_noshot(auto_save_state_slot,
+    current_savestate_filename);
+    save_state(current_savestate_filename, current_screen);
+    free(current_screen);
+  }
   save_romdir();
 
   if(!update_backup_flag)
@@ -910,7 +923,7 @@ void reset_gba()
 {
   init_main();
   init_memory();
-  init_cpu(BootBIOS);
+  init_cpu(boot_to_BIOS);
   reset_sound();
 }
 
