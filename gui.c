@@ -1214,6 +1214,8 @@ u32 menu(u16 *original_screen)
     "R",
     "START",
     "SELECT",
+    "SAVE STATE",
+    "LOAD STATE",
     /* Disabled for now */
     /*"FASTFORWARD",
     "LOAD STATE",

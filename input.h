@@ -22,6 +22,8 @@
 
 typedef enum
 {
+  BUTTON_LOADSTATE = 0x202,
+  BUTTON_SAVESTATE = 0x201,
   BUTTON_L = 0x200,
   BUTTON_R = 0x100,
   BUTTON_DOWN = 0x80,
