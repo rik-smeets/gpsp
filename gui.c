@@ -1202,11 +1202,11 @@ u32 menu(u16 *original_screen)
     "Select button on GBA.",
     "Saves the game state to the current slot.",
     "Loads the game state from the current slot.",
+    "Rapidly press/release the A button on GBA.",
+    "Rapidly press/release the B button on GBA.",
     "Does nothing."
     // "Brings up the options menu.",
     // "Toggles fastforward on/off.",
-    // "Rapidly press/release the A button on GBA.",
-    // "Rapidly press/release the B button on GBA.",
     // "Rapidly press/release the L shoulder on GBA.",
     // "Rapidly press/release the R shoulder on GBA.",
     // "Increases the volume.",
@@ -1228,6 +1228,8 @@ u32 menu(u16 *original_screen)
     "SELECT",
     "SAVE STATE",
     "LOAD STATE",
+    "AUTO FIRE A",
+    "AUTO FIRE B",
     "NOTHING"
   };
 

@@ -61,6 +61,7 @@ typedef enum
 
 #define BUTTON_REPEAT_START    200000
 #define BUTTON_REPEAT_CONTINUE 50000
+#define BUTTON_REPEAT_RATE 200000
 
 button_repeat_state_type button_repeat_state = BUTTON_NOT_HELD;
 u32 button_repeat = 0;
@@ -668,6 +669,10 @@ uint32_t tokey(uint32_t i)
       return BUTTON_SAVESTATE;
     case 11:
       return BUTTON_LOADSTATE;
+    case 12:
+      return BUTTON_AUTOFIRE_A;
+    case 13:
+      return BUTTON_AUTOFIRE_B;
 		break;
 	}
 	return 0;	
@@ -837,12 +842,52 @@ gui_action_type get_gui_input()
   return gui_action;
 }
 
+u32 isAutoFireOnA = 0;
+u32 isAutoFireOnB = 0;
+u64 lastTickOnA = 0;
+u64 lastTickOnB = 0;
+
 u32 update_input()
 {
+
   SDL_Event event;
-  
+
   io_registers[REG_P1] = (~key) & 0x3FF;
-  
+
+  if (isAutoFireOnA == 1)
+  {
+    u64 new_ticks;
+    get_ticks_us(&new_ticks);
+
+    if (new_ticks - lastTickOnA > BUTTON_REPEAT_RATE)
+    {
+      get_ticks_us(&lastTickOnA);
+      key |= BUTTON_A;
+      trigger_key(key);
+    }
+    else
+    {
+      key &= ~BUTTON_A;
+    }
+  }
+
+  if (isAutoFireOnB == 1)
+  {
+    u64 new_ticks;
+    get_ticks_us(&new_ticks);
+
+    if (new_ticks - lastTickOnB > BUTTON_REPEAT_RATE)
+    {
+      get_ticks_us(&lastTickOnB);
+      key |= BUTTON_B;
+      trigger_key(key);
+    }
+    else
+    {
+      key &= ~BUTTON_B;
+    }
+  }
+
   while(SDL_PollEvent(&event))
   {
     switch(event.type)
@@ -891,8 +936,7 @@ u32 update_input()
           debug_on();
           return 1;
         }
-        else
-        if(event.key.keysym.sym == SDLK_BACKQUOTE)
+        else if(event.key.keysym.sym == SDLK_BACKQUOTE)
         {
           synchronize_flag ^= 1;
         }
@@ -917,12 +961,19 @@ u32 update_input()
             load_state(current_savestate_filename);
             return 1;
           }
-          else 
+          else if (mappedKey == BUTTON_AUTOFIRE_A)
+          {
+            isAutoFireOnA = 1;
+          }
+          else if (mappedKey == BUTTON_AUTOFIRE_B)
+          {
+            isAutoFireOnB = 1;
+          }
+          else
           {
             key |= mappedKey;
             trigger_key(key);
           }
-          
         }
 
         break;
@@ -930,7 +981,20 @@ u32 update_input()
 
       case SDL_KEYUP:
       {
-        key &= ~(key_map(event.key.keysym.sym));
+        u32 mappedKey = key_map(event.key.keysym.sym);
+        if (mappedKey == BUTTON_AUTOFIRE_A)
+        {
+          isAutoFireOnA = 0;
+        }
+        else if (mappedKey == BUTTON_AUTOFIRE_B)
+        {
+          isAutoFireOnB = 0;
+        }
+        else
+        {
+          key &= ~mappedKey;
+        }
+
         break;
       }
     }
