@@ -1188,7 +1188,6 @@ u32 menu(u16 *original_screen)
   auto void choose_menu();
   auto void clear_help();
 
-//#ifndef PC_BUILD
   static const char * const gamepad_help[] =
   {
     "Up button on GBA d-pad.",
@@ -1201,18 +1200,18 @@ u32 menu(u16 *original_screen)
     "Right shoulder button on GBA.",
     "Start button on GBA.",
     "Select button on GBA.",
-    "Brings up the options menu.",
-    "Toggles fastforward on/off.",
-    "Loads the game state from the current slot.",
     "Saves the game state to the current slot.",
-    "Rapidly press/release the A button on GBA.",
-    "Rapidly press/release the B button on GBA.",
-    "Rapidly press/release the L shoulder on GBA.",
-    "Rapidly press/release the R shoulder on GBA.",
-    "Increases the volume.",
-    "Decreases the volume.",
-    "Displays virtual/drawn frames per second.",
+    "Loads the game state from the current slot.",
     "Does nothing."
+    // "Brings up the options menu.",
+    // "Toggles fastforward on/off.",
+    // "Rapidly press/release the A button on GBA.",
+    // "Rapidly press/release the B button on GBA.",
+    // "Rapidly press/release the L shoulder on GBA.",
+    // "Rapidly press/release the R shoulder on GBA.",
+    // "Increases the volume.",
+    // "Decreases the volume.",
+    // "Displays virtual/drawn frames per second.",
   };
 
   static const char *gamepad_config_buttons[] =
@@ -1229,13 +1228,8 @@ u32 menu(u16 *original_screen)
     "SELECT",
     "SAVE STATE",
     "LOAD STATE",
-    /* Disabled for now */
-    /*"FASTFORWARD",
-    "LOAD STATE",
-    "SAVE STATE",*/
     "NOTHING"
   };
-//#endif
 
   void menu_update_clock()
   {
@@ -1397,8 +1391,8 @@ u32 menu(u16 *original_screen)
      (u32 *)(&screen_scale),
      sizeof(scale_options) / sizeof(scale_options[0]),
 #ifndef GP2X_BUILD
-     "Determines how the GBA screen is resized in relation to the\n"
-     "entire screen."
+     "Determines how the GBA screen is resized in\n"
+     "relation to the entire screen."
 #ifdef PSP_BUILD
      " Select unscaled 3:2 for GBA resolution, scaled 3:2 for GBA\n"
      "aspect ratio scaled to fill the height of the PSP screen, and\n"
@@ -1411,10 +1405,9 @@ u32 menu(u16 *original_screen)
 #ifndef GP2X_BUILD
     string_selection_option(NULL, "Screen filtering", yes_no_options,
      (u32 *)(&screen_filter), 2,
-     "Determines whether or not filtering should be used when\n"
-     "scaling the screen. Selecting this will produce a more even and\n"
-     "smooth image, at the cost of being blurry and having less vibrant\n"
-     "colors.", 3),
+     "Screen filtering produces a more even and smooth\n"
+     "image, at the cost of being blurry and having less\n"
+     "vibrant colors.", 3),
 #endif
 #if defined (PND_BUILD)
     string_selection_option(NULL, "Scaling filter", filter2_options,
@@ -1424,29 +1417,22 @@ u32 menu(u16 *original_screen)
 #endif
     string_selection_option(NULL, "Frameskip type", frameskip_options,
      (u32 *)(&current_frameskip_type), 3,
-#ifndef GP2X_BUILD
-     "Determines what kind of frameskipping to use.\n"
-     "Frameskipping may improve emulation speed of many games.\n"
-#endif
      "Off: Do not skip any frames.\n"
      "Auto: Skip up to N frames (see next opt) as needed.\n"
-     "Manual: Always render only 1 out of N + 1 frames."
-     , 5),
+     "Manual: Always render only 1 out of N + 1 frames." , 5),
     numeric_selection_option(NULL, "Frameskip value", &frameskip_value, 100,
 #ifndef GP2X_BUILD
-     "For auto frameskip, determines the maximum number of frames that\n"
-     "are allowed to be skipped consecutively.\n"
-     "For manual frameskip, determines the number of frames that will\n"
-     "always be skipped."
+     "The number of frames that will always be skipped\n"
+     "(manual frameskip) or the maximum consecutive\n"
+     "frameskips (auto frameskip)."
 #endif
      "", 6),
     string_selection_option(NULL, "Framskip variation",
      frameskip_variation_options, &random_skip, 2,
 #ifndef GP2X_BUILD
-     "If objects in the game flicker at a regular rate certain manual\n"
-     "frameskip values may cause them to normally disappear. Change this\n"
-     "value to 'random' to avoid this. Do not use otherwise, as it tends\n"
-     "to make the image quality worse, especially in high motion games."
+     "Frameskip can make objects in games disappear.\n"
+     "Change this value to 'random' to avoid this.\n"
+     "Note: this decreases image quality."
 #endif
      "", 7),
     string_selection_option(NULL, "Audio output", yes_no_options,
@@ -1468,8 +1454,7 @@ u32 menu(u16 *original_screen)
      "This option requires gpSP to be restarted before it will take effect.",
 #else
      "Set the size (in bytes) of the audio buffer.\n"
-     "This option requires gpSP restart to take effect.\n"
-     "Settable values may be limited by SDL implementation.",
+     "Requires gpSP to be restarted to take effect.\n",
 #endif
      10),
     submenu_option(NULL, "Back", "Return to the main menu.", 12)
@@ -1519,34 +1504,34 @@ u32 menu(u16 *original_screen)
 
   menu_option_type savestate_options[] =
   {
+    string_selection_option(NULL, "Auto load state", yes_no_options,
+     (u32 *)(&auto_load_save_state), 2,
+     "Load state on game launch.\n", 3),
+     string_selection_option(NULL, "Auto save state", yes_no_options,
+     (u32 *)(&auto_save_state), 2,
+     "Save state on exiting gpSP.\n", 4),
+    numeric_selection_option(menu_change_state, "Auto save state slot",
+     (u32 *)(&auto_save_state_slot), 10,
+     "Savestate slot for auto save state.\n", 5),
     numeric_selection_action_hide_option(menu_load_state, menu_change_state,
      "Load savestate from current slot", &savestate_slot, 10,
      "Select to load the game state from the current slot\n"
      "for this game.\n"
-     "Press left + right to change the current slot.", 3),
+     "Press left + right to change the current slot.", 7),
     numeric_selection_action_hide_option(menu_save_state, menu_change_state,
      "Save savestate to current slot", &savestate_slot, 10,
      "Select to save the game state to the current slot\n"
      "for this game.\n"
-     "Press left + right to change the current slot.", 4),
+     "Press left + right to change the current slot.", 8),
     numeric_selection_option(menu_change_state,
      "Current savestate slot", &savestate_slot, 10,
-     "Change the current savestate slot.\n", 5),
+     "Change the current savestate slot.\n", 9),
     numeric_selection_action_hide_option(menu_load_state_file,
       menu_change_state,
      "Load savestate from file", &savestate_slot, 10,
      "Restore gameplay from a savestate file.\n"
      "Note: The same file used to save the state must be\n"
-     "present.\n", 7),
-    string_selection_option(NULL, "Auto load state", yes_no_options,
-     (u32 *)(&auto_load_save_state), 2,
-     "Load state on game launch.\n", 9),
-     string_selection_option(NULL, "Auto save state", yes_no_options,
-     (u32 *)(&auto_save_state), 2,
-     "Save state on exiting gpSP.\n", 10),
-    numeric_selection_option(menu_change_state, "Auto save state slot",
-     (u32 *)(&auto_save_state_slot), 10,
-     "Savestate slot for auto save state.\n", 11),
+     "present.\n", 11),
     submenu_option(NULL, "Back", "Return to the main menu.", 13)
   };
 
@@ -1703,8 +1688,8 @@ u32 menu(u16 *original_screen)
      "Select to manage cheats, set backup behavior,\n"
      "and set device clock speed.", 7),
     action_option(menu_load, NULL, "Load new game",
-     "Select to load a new game\n"
-     "(will exit a game if currently playing).", 8),
+     "Select to load a new game (will exit a game\n"
+     "if currently playing).", 8),
     action_option(menu_restart, NULL, "Restart game",
      "Select to reset the GBA with the current game\n"
      "loaded.", 9),
