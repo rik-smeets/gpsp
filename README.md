@@ -1,5 +1,5 @@
-# gpSP for PowKiddy
-An enhanced version of gpSP for PowKiddy devices V90, Q90, Q20 Mini and the PocketGo 1. 
+# gpSP for PowKiddy & Bittboy
+An enhanced version of gpSP for PowKiddy and Bittboy devices. 
 
 ## Changelog
 ### v1.0

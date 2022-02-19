@@ -1640,8 +1640,13 @@ u32 menu(u16 *original_screen)
     gamepad_config_option("D-pad down   ", 1),
     gamepad_config_option("D-pad left   ", 2),
     gamepad_config_option("D-pad right  ", 3),
+#ifdef POWKIDDY
     gamepad_config_option("B            ", 4),
     gamepad_config_option("A            ", 5),
+#else
+    gamepad_config_option("A            ", 4),
+    gamepad_config_option("B            ", 5),
+#endif
     gamepad_config_option("X            ", 6),
     gamepad_config_option("Y            ", 7),
     gamepad_config_option("Left Trigger ", 8),

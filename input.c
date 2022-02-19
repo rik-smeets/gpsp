@@ -786,7 +786,7 @@ gui_action_type get_gui_input()
           case SDLK_RIGHT:
             gui_action = CURSOR_RIGHT;
             break;
-
+#ifdef POWKIDDY
           case SDLK_ESCAPE:
           case SDLK_LCTRL:
             gui_action = CURSOR_EXIT;
@@ -796,6 +796,20 @@ gui_action_type get_gui_input()
           case SDLK_LALT:
             gui_action = CURSOR_SELECT;
             break;
+#else
+          case SDLK_ESCAPE:
+            gui_action = CURSOR_EXIT;
+            break;
+
+          case SDLK_RETURN:
+          case SDLK_LCTRL:
+            gui_action = CURSOR_SELECT;
+            break;
+
+          case SDLK_LALT:
+            gui_action = CURSOR_BACK;
+            break;
+#endif
 	 default:
 	    break;
       }
