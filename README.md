@@ -1,6 +1,12 @@
 # gpSP for PowKiddy & Bittboy
 An enhanced version of gpSP for PowKiddy and Bittboy devices. 
 
+## How to install
+*Note: in these instructions, it is presumed you use the [MiyooCFW](https://github.com/TriForceX/MiyooCFW/) custom firmware on your device.*
+1. Download the latest release ZIP-file over at [Releases](https://github.com/rik-smeets/gpsp/releases/latest).
+2. Copy the `gpsp_rumble.elf` file from the folder matching your device brand (i.e. PowKiddy or Bittboy).
+3. Replace the existing `gpsp_rumble.elf` file in `main\emus\gpsp_rumble` with the downloaded version.
+
 ## Changelog
 ### v1.0
 #### New features
