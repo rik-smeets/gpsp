@@ -1671,12 +1671,12 @@ u32 menu(u16 *original_screen)
     submenu_option(&graphics_sound_menu, "Graphics and Sound options",
      "Select to set display parameters and frameskip\n"
      "behavior, audio on/off, buffer size, and filtering.", 0),
-    numeric_selection_action_option(menu_load_state, NULL,
+    numeric_selection_action_option(menu_load_state, menu_change_state,
      "Load state from slot", &savestate_slot, 10,
      "Select to load the game state from the current slot\n"
      "for this game, if it exists.\n"
      "Press left + right to change the current slot.", 2),
-    numeric_selection_action_option(menu_save_state, NULL,
+    numeric_selection_action_option(menu_save_state, menu_change_state,
      "Save state to slot", &savestate_slot, 10,
      "Select to save the game state to the current slot\n"
      "for this game. See the extended menu for more info.\n"

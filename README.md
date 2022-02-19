@@ -9,6 +9,7 @@ An enhanced version of gpSP for PowKiddy and Bittboy devices.
 - Autofire A/B button (can be set in button mapping) ([based phantuanphong's solution](https://github.com/phantuanphong/gpsp-powkiddy))
 
 #### Bugfixes
+- Fix bug when loading or saving states didn't always use the displayed save slot
 - Fix option to disable screen filter ([thanks to user @drowsnug on Discord](https://discord.com/channels/529983248114122762/540168599063756802/819836183105765406))
 - Fix some minor text related issues in gpSP's GUI
 
