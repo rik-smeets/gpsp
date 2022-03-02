@@ -23,6 +23,7 @@ extern u32 boot_to_BIOS;
 extern u32 auto_load_save_state;
 extern u32 auto_save_state;
 extern u32 auto_save_state_slot;
+u32 display_state_screenshot = 1;
 
 #ifndef _WIN32_WCE
 
@@ -896,6 +897,7 @@ enum file_options {
   fo_auto_load_state,
   fo_auto_save_state,
   fo_auto_save_state_slot,
+  fo_display_state_screenshot,
   fo_boot_bios,
   fo_main_option_count,
 };
@@ -962,6 +964,7 @@ s32 load_config_file()
       auto_save_state = file_options[fo_auto_save_state] % 2;
       auto_save_state_slot = file_options[fo_auto_save_state_slot];
       global_enable_audio = file_options[fo_global_enable_audio] % 2;
+      display_state_screenshot = file_options[fo_display_state_screenshot] % 2;
       screen_filter2 = file_options[fo_screen_filter2] %
         (sizeof(filter2_options) / sizeof(filter2_options[0]));
 
@@ -1078,6 +1081,7 @@ s32 save_config_file()
   file_options[fo_auto_load_state] = auto_load_save_state;
   file_options[fo_auto_save_state] = auto_save_state;
   file_options[fo_auto_save_state_slot] = auto_save_state_slot;
+  file_options[fo_display_state_screenshot] = display_state_screenshot;
 
     file_write_array(config_file, file_options);
 
@@ -1142,7 +1146,10 @@ void get_savestate_snapshot(char *savestate_filename)
   }
 
 #ifndef GP2X_BUILD
-  blit_to_screen(snapshot_buffer, 240, 160, 230, 40);
+  if (display_state_screenshot) 
+  {
+    blit_to_screen(snapshot_buffer, 240, 160, 230, 40);
+  }
 #endif
 }
 
@@ -1529,13 +1536,17 @@ u32 menu(u16 *original_screen)
     numeric_selection_option(menu_change_state,
      "Current savestate slot", &savestate_slot, 10,
      "Change the current savestate slot.\n", 9),
+    string_selection_option(NULL, "Display state screenshot", yes_no_options,
+     (u32 *)(&display_state_screenshot), 2,
+     "Displays a screenshot of the selected save\n"
+     "state in the menu.\n", 11),
     numeric_selection_action_hide_option(menu_load_state_file,
       menu_change_state,
      "Load savestate from file", &savestate_slot, 10,
      "Restore gameplay from a savestate file.\n"
      "Note: The same file used to save the state must be\n"
-     "present.\n", 11),
-    submenu_option(NULL, "Back", "Return to the main menu.", 13)
+     "present.\n", 13),
+    submenu_option(NULL, "Back", "Return to the main menu.", 15)
   };
 
   make_menu(savestate, submenu_savestate, NULL);
