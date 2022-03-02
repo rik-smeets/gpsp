@@ -1300,6 +1300,7 @@ u32 menu(u16 *original_screen)
       get_savestate_filename_noshot(savestate_slot,
        current_savestate_filename);
       save_state(current_savestate_filename, original_screen);
+      menu_exit();
     }
     menu_change_state();
   }
@@ -1668,22 +1669,22 @@ u32 menu(u16 *original_screen)
 
   menu_option_type main_options[] =
   {
-    submenu_option(&graphics_sound_menu, "Graphics and Sound options",
-     "Select to set display parameters and frameskip\n"
-     "behavior, audio on/off, buffer size, and filtering.", 0),
     numeric_selection_action_option(menu_load_state, menu_change_state,
      "Load state from slot", &savestate_slot, 10,
      "Select to load the game state from the current slot\n"
      "for this game, if it exists.\n"
-     "Press left + right to change the current slot.", 2),
+     "Press left + right to change the current slot.", 0),
     numeric_selection_action_option(menu_save_state, menu_change_state,
      "Save state to slot", &savestate_slot, 10,
      "Select to save the game state to the current slot\n"
      "for this game. See the extended menu for more info.\n"
-     "Press left + right to change the current slot.", 3),
+     "Press left + right to change the current slot.", 1),
     submenu_option(&savestate_menu, "Savestate options",
      "Configure auto save states and everything else\n"
-     "regarding save states here.", 4),
+     "regarding save states here.", 2),
+    submenu_option(&graphics_sound_menu, "Graphics and Sound options",
+     "Select to set display parameters and frameskip\n"
+     "behavior, audio on/off, buffer size, and filtering.", 4),
     submenu_option(&gamepad_config_menu, "Configure gamepad input",
      "Select to change the in-game behavior of buttons\n"
      "and d-pad.", 6),
@@ -1700,12 +1701,12 @@ u32 menu(u16 *original_screen)
     action_option(menu_restart, NULL, "Restart game",
      "Select to reset the GBA with the current game\n"
      "loaded.", 9),
-    action_option(menu_exit, NULL, "Return to game",
-     "Select to exit this menu and resume gameplay.", 10),
      string_selection_option(NULL, "Boot to BIOS", yes_no_options,
      (u32*)(&boot_to_BIOS), 2, 
-     "", 11),
-     
+     "", 10),
+    action_option(menu_exit, NULL, "Return to game",
+     "Select to exit this menu and resume gameplay.\n"
+     "You can always press 'B' to exit this menu too.", 12),
     action_option(menu_quit, NULL, "Exit gpSP",
      "Select to exit gpSP and return to the menu.", 13)
   };
