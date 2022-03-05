@@ -35,3 +35,14 @@ See [./readme.txt](./readme.txt)
 ## Thanks to
 - gameblabla for writing the initial [Bittboy gpSP port](https://github.com/bittboy/gpsp)
 - the other people mentioned in the changelog who shared improvements for gpSP
+
+## How to build
+0. Build the BittBoy toolchain as described [here](https://github.com/TriForceX/MiyooCFW/wiki/Making-Games). Follow the steps up to (and including) step 3.
+0. You can now build gpSP as described [here](./build.txt).
+
+### Optimizing your build
+0. The build binaries will not be optimized for your device yet. First, use your emulator build on your device. Test some games and some features of the emulator. You'll probably notice a suboptimal performance. 
+0. Now, close the emulator. In the folder where your emulator build is, a `./profile` folder will have appeared with a bunch of `.gcda` files. Move those to the `powkiddy` or `bittboy` folder (depending on your device).
+0. In `Makefile`, change `-fprofile-generate=./profile` to `-fprofile-use=./`.
+0. Make a new build. If required, force a new build with `make -B`.
+0. Done! Enjoy your now device optimized emulator.
