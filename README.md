@@ -8,6 +8,12 @@ An enhanced version of gpSP for PowKiddy and Bittboy devices.
 3. Replace the existing `gpsp_rumble.elf` file in `main\emus\gpsp_rumble` with the downloaded version.
 
 ## Changelog
+### v1.1
+#### New features
+- Automatically exit menu on saving state
+- Add setting to display or hide state screenshots
+- Optimize the order of menu items
+
 ### v1.0
 #### New features
 - Map save/load state to buttons
