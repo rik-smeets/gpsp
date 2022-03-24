@@ -4290,7 +4290,26 @@ void video_resolution_small()
   resolution_width = small_resolution_width;
   resolution_height = small_resolution_height;
   
-  SDL_FillRect(rl_screen, NULL, 0);
+  switch(current_scale){
+  case unscaled:
+    {
+      char name[128]={0};
+      SDL_Surface *loadPNG(const char* Path, uint32_t MaxWidth, uint32_t MaxHeight);
+      sprintf(name, "%s/border.png", main_path);
+      SDL_Surface* png = loadPNG(name, GCW0_SCREEN_WIDTH, GCW0_SCREEN_HEIGHT);
+      if(png == NULL){
+        printf("failed to load border png\n");
+      }
+      SDL_BlitSurface(png, NULL, rl_screen, NULL);
+      SDL_Flip(rl_screen);
+      SDL_BlitSurface(png, NULL, rl_screen, NULL);
+      SDL_Flip(rl_screen);
+      SDL_FreeSurface(png);
+    }
+    break;
+  default:
+    break;
+  }
 }
 
 void set_gba_resolution(video_scale_type scale)
