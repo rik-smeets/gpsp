@@ -3609,8 +3609,8 @@ static inline void gba_nofilter_upscale(uint16_t *dst, uint16_t *src, int h)
             }
             
             *dst++ = a;
-            *dst++ = (AVERAGE16(a,b) & 0b0000000000011111) | (b & 0b1111111111100000);
-            *dst++ = (b & 0b0000011111111111) | (AVERAGE16(b,c) & 0b1111100000000000);
+            *dst++ = AVERAGE16(a,b);
+            *dst++ = b;
             *dst++ = c;
             source+=3;
 
