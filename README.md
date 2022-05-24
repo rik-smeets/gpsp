@@ -8,6 +8,10 @@ An enhanced version of gpSP for PowKiddy and Bittboy devices.
 3. Replace the existing `gpsp_rumble.elf` file in `main\emus\gpsp_rumble` with the downloaded version.
 
 ## Changelog
+### v1.2
+#### Improvements
+- Improve unfiltered video upscaling
+
 ### v1.1
 #### New features
 - Automatically exit menu on saving state
