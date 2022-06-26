@@ -3591,7 +3591,7 @@ static inline void gba_nofilter_upscale(uint16_t *dst, uint16_t *src, int h)
     dst += ((240-h)/2) * 320;  // blank upper border. h=240(full) or h=214(aspect)
 
     int x, y;
-    for (y = 0; y < 240; y++)
+    for (y = 0; y < h; y++)
     {
         int source = dh * width;
         for (x = 0; x < 320/4; x++)
