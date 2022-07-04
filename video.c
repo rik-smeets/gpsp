@@ -4290,9 +4290,7 @@ void video_resolution_small()
   resolution_width = small_resolution_width;
   resolution_height = small_resolution_height;
   
-  switch(current_scale){
-  case unscaled:
-    {
+  if (screen_scale == unscaled){
       char name[128]={0};
       SDL_Surface *loadPNG(const char* Path, uint32_t MaxWidth, uint32_t MaxHeight);
       sprintf(name, "%s/border.png", main_path);
@@ -4305,10 +4303,6 @@ void video_resolution_small()
       SDL_BlitSurface(png, NULL, rl_screen, NULL);
       SDL_Flip(rl_screen);
       SDL_FreeSurface(png);
-    }
-    break;
-  default:
-    break;
   }
 }
 
